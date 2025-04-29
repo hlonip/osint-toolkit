@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT Toolkit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #eef2ff;
+            --background: #f9fafb;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .dark {
+            --background: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --primary-light: #1e1b4b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            color: var(--text);
+            background-color: var(--card-bg);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .search-container {
+            margin-bottom: 40px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            background-color: var(--card-bg);
+            color: var(--text);
+            transition: border-color 0.2s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+            gap: 8px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .card h3 {
+            margin-bottom: 16px;
+            color: var(--text);
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            line-height: 1.7;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .tool-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary);
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .tool-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .tool-card h4 {
+            margin-bottom: 12px;
+            color: var(--text);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .tool-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            line-height: 1.6;
+        }
+
+        .tool-card a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            background-color: var(--primary-light);
+            transition: all 0.2s ease;
+            width: fit-content;
+        }
+
+        .tool-card a:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .category-header {
+            margin: 40px 0 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .category-header i {
+            color: var(--primary);
+        }
+
+        footer {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .tool-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            
+            .tab {
+                flex: 1 0 calc(33% - 4px);
+                text-align: center;
+                padding: 10px;
+                font-size: 0.9rem;
+                justify-content: center;
+            }
+
+            .tab i {
+                margin-right: 4px;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .tool-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-search-location logo-icon"></i>
+                <h1>OSINT Toolkit</h1>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+                <span>Toggle Dark Mode</span>
+            </button>
+        </header>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search for tools...">
+                <button id="searchButton">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </button>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="all">
+                    <i class="fas fa-th-large"></i>
+                    <span>All Tools</span>
+                </div>
+                <div class="tab" data-tab="domain">
+                    <i class="fas fa-globe"></i>
+                    <span>Domain & IP</span>
+                </div>
+                <div class="tab" data-tab="person">
+                    <i class="fas fa-user-detective"></i>
+                    <span>Person Search</span>
+                </div>
+                <div class="tab" data-tab="social">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Social Media</span>
+                </div>
+                <div class="tab" data-tab="documents">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Documents</span>
+                </div>
+                <div class="tab" data-tab="images">
+                    <i class="fas fa-image"></i>
+                    <span>Images & Media</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content active" id="all">
+            <div class="card">
+                <h3>OSINT Toolkit</h3>
+                <p>A comprehensive collection of open-source intelligence tools for research and investigation. These tools provide access to publicly available information for legitimate research purposes. Use responsibly and ethically.</p>
+            </div>
+
+            <h2 class="category-header">
+                <i class="fas fa-globe fa-lg"></i>
+                Domain & IP Intelligence
+            </h2>
+            <div class="tool-grid">
+                <div class="tool-card" data-category="domain">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <h4>WHOIS Lookup</h4>
+                    </div>
+                    <p>Look up domain registration information including owner, dates, and contact details.</p>
+                    <a href="https://whois.domaintools.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="domain">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <h4>Shodan</h4>
+                    </div>
+                    <p>Search engine for Internet-connected devices and their vulnerabilities.</p>
+                    <a href="https://www.shodan.io/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="domain">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <h4>SecurityTrails</h4>
+                    </div>
+                    <p>Historical DNS, domain and IP data for security research.</p>
+                    <a href="https://securitytrails.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="domain">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>VirusTotal</h4>
+                    </div>
+                    <p>Analyze suspicious files, domains, IPs and URLs to detect malware.</p>
+                    <a href="https://www.virustotal.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="domain">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <h4>DNSDumpster</h4>
+                    </div>
+                    <p>DNS reconnaissance tool to discover hosts related to a domain.</p>
+                    <a href="https://dnsdumpster.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="domain">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h4>Censys</h4>
+                    </div>
+                    <p>Search engine for finding internet devices, networks, and certificates.</p>
+                    <a href="https://censys.io/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+            </div>
+
+            <h2 class="category-header">
+                <i class="fas fa-user-detective fa-lg"></i>
+                Person Search
+            </h2>
+            <div class="tool-grid">
+                <div class="tool-card" data-category="person">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-id-badge"></i>
+                        </div>
+                        <h4>WebMii</h4>
+                    </div>
+                    <p>Find people and verify identities across the web.</p>
+                    <a href="https://webmii.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="person">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-address-book"></i>
+                        </div>
+                        <h4>That's Them</h4>
+                    </div>
+                    <p>Free people search, reverse phone lookup, and address lookup.</p>
+                    <a href="https://thatsthem.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="person">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h4>Hunter.io</h4>
+                    </div>
+                    <p>Find email addresses associated with a domain name.</p>
+                    <a href="https://hunter.io/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="person">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-search-location"></i>
+                        </div>
+                        <h4>Spokeo</h4>
+                    </div>
+                    <p>People search engine that provides information about people and their online presence.</p>
+                    <a href="https://www.spokeo.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="person">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <h4>Pipl</h4>
+                    </div>
+                    <p>Identity resolution and people search engine.</p>
+                    <a href="https://pipl.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+            </div>
+
+            <h2 class="category-header">
+                <i class="fas fa-share-alt fa-lg"></i>
+                Social Media Intelligence
+            </h2>
+            <div class="tool-grid">
+                <div class="tool-card" data-category="social">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-user-tag"></i>
+                        </div>
+                        <h4>Namechk</h4>
+                    </div>
+                    <p>Check username availability across multiple platforms.</p>
+                    <a href="https://namechk.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="social">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                        <h4>Social Searcher</h4>
+                    </div>
+                    <p>Search for content in social networks in real-time.</p>
+                    <a href="https://www.social-searcher.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="social">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fab fa-twitter"></i>
+                        </div>
+                        <h4>TweetDeck</h4>
+                    </div>
+                    <p>Monitor and manage Twitter accounts and searches in real-time.</p>
+                    <a href="https://tweetdeck.twitter.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="social">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>Followerwonk</h4>
+                    </div>
+                    <p>Twitter analytics, search bios, compare users, track followers.</p>
+                    <a href="https://followerwonk.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="social">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-user-secret"></i>
+                        </div>
+                        <h4>Sherlock</h4>
+                    </div>
+                    <p>Hunt down social media accounts by username across social networks.</p>
+                    <a href="https://github.com/sherlock-project/sherlock" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+            </div>
+
+            <h2 class="category-header">
+                <i class="fas fa-file-alt fa-lg"></i>
+                Documents & Data
+            </h2>
+            <div class="tool-grid">
+                <div class="tool-card" data-category="documents">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fab fa-google"></i>
+                        </div>
+                        <h4>Google Dorks</h4>
+                    </div>
+                    <p>Advanced Google search operators to find specific file types and information.</p>
+                    <a href="https://www.exploit-db.com/google-hacking-database" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="documents">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                        <h4>DocumentCloud</h4>
+                    </div>
+                    <p>Platform for uploading, analyzing, annotating, and publishing source documents.</p>
+                    <a href="https://www.documentcloud.org/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="documents">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <h4>Wayback Machine</h4>
+                    </div>
+                    <p>Digital archive of the World Wide Web and other information on the Internet.</p>
+                    <a href="https://archive.org/web/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="documents">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <h4>PDF Examiner</h4>
+                    </div>
+                    <p>Analyze PDF files for hidden information and metadata.</p>
+                    <a href="https://www.pdfexaminer.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+            </div>
+
+            <h2 class="category-header">
+                <i class="fas fa-image fa-lg"></i>
+                Images & Media
+            </h2>
+            <div class="tool-grid">
+                <div class="tool-card" data-category="images">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-camera-retro"></i>
+                        </div>
+                        <h4>TinEye</h4>
+                    </div>
+                    <p>Reverse image search engine to find where an image appears online.</p>
+                    <a href="https://tineye.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="images">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <h4>Google Images</h4>
+                    </div>
+                    <p>Search by image to find similar images and their sources.</p>
+                    <a href="https://images.google.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="images">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <h4>ExifTool</h4>
+                    </div>
+                    <p>Read, write and edit metadata information in files.</p>
+                    <a href="https://exiftool.org/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="images">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h4>InVID Verification Plugin</h4>
+                    </div>
+                    <p>Browser extension to help verify images and videos.</p>
+                    <a href="https://www.invid-project.eu/tools-and-services/invid-verification-plugin/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+                <div class="tool-card" data-category="images">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-microscope"></i>
+                        </div>
+                        <h4>FotoForensics</h4>
+                    </div>
+                    <p>Analyze digital images to detect manipulation and editing.</p>
+                    <a href="https://fotoforensics.com/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="domain">
+            <!-- Domain & IP content will be populated by JavaScript -->
+        </div>
+
+        <div class="tab-content" id="person">
+            <!-- Person Search content will be populated by JavaScript -->
+        </div>
+
+        <div class="tab-content" id="social">
+            <!-- Social Media content will be populated by JavaScript -->
+        </div>
+
+        <div class="tab-content" id="documents">
+            <!-- Documents & Data content will be populated by JavaScript -->
+        </div>
+
+        <div class="tab-content" id="images">
+            <!-- Images & Media content will be populated by JavaScript -->
+        </div>
+
+        <footer>
+            <p>OSINT Toolkit - For legitimate research and educational purposes only.</p>
+            <p>Last updated: March 2024</p>
+        </footer>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+        const themeText = themeToggle.querySelector('span');
+        
+        function updateThemeUI() {
+            if (document.body.classList.contains('dark')) {
+                themeIcon.className = 'fas fa-sun';
+                themeText.textContent = 'Toggle Light Mode';
+            } else {
+                themeIcon.className = 'fas fa-moon';
+                themeText.textContent = 'Toggle Dark Mode';
+            }
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            updateThemeUI();
+        });
+
+        // Check for saved theme preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            updateThemeUI();
+        }
+
+        // Tab switching functionality
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                tabs.  () => {
+                // Remove active class from all tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Hide all tab contents
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                // Show the corresponding tab content
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+                
+                // If not the "all" tab, populate the category-specific tab content
+                if (tabId !== 'all') {
+                    populateCategoryTab(tabId);
+                }
+            });
+        });
+
+        // Function to populate category-specific tabs
+        function populateCategoryTab(category) {
+            const tabContent = document.getElementById(category);
+            
+            // Clear existing content
+            tabContent.innerHTML = '';
+            
+            // Add header card
+            const headerCard = document.createElement('div');
+            headerCard.className = 'card';
+            
+            let headerTitle, headerDescription, headerIcon;
+            
+            switch(category) {
+                case 'domain':
+                    headerTitle = 'Domain & IP Intelligence';
+                    headerDescription = 'Tools for researching domains, IP addresses, and network infrastructure.';
+                    headerIcon = 'fas fa-globe';
+                    break;
+                case 'person':
+                    headerTitle = 'Person Search Tools';
+                    headerDescription = 'Resources for finding information about individuals from public records and online sources.';
+                    headerIcon = 'fas fa-user-detective';
+                    break;
+                case 'social':
+                    headerTitle = 'Social Media Intelligence';
+                    headerDescription = 'Tools for analyzing social media profiles, content, and connections.';
+                    headerIcon = 'fas fa-share-alt';
+                    break;
+                case 'documents':
+                    headerTitle = 'Documents & Data Research';
+                    headerDescription = 'Resources for finding and analyzing documents, databases, and other data sources.';
+                    headerIcon = 'fas fa-file-alt';
+                    break;
+                case 'images':
+                    headerTitle = 'Image & Media Analysis';
+                    headerDescription = 'Tools for reverse image search, metadata extraction, and media verification.';
+                    headerIcon = 'fas fa-image';
+                    break;
+            }
+            
+            headerCard.innerHTML = `
+                <h3><i class="${headerIcon} mr-2"></i> ${headerTitle}</h3>
+                <p>${headerDescription}</p>
+            `;
+            
+            tabContent.appendChild(headerCard);
+            
+            // Create tool grid
+            const toolGrid = document.createElement('div');
+            toolGrid.className = 'tool-grid';
+            
+            // Get all tools for this category
+            const categoryTools = document.querySelectorAll(`.tool-card[data-category="${category}"]`);
+            
+            // Clone each tool and add to the grid
+            categoryTools.forEach(tool => {
+                const toolClone = tool.cloneNode(true);
+                toolGrid.appendChild(toolClone);
+            });
+            
+            tabContent.appendChild(toolGrid);
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+
+        function performSearch() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            if (searchTerm.trim() === '') {
+                return;
+            }
+            
+            // Switch to "all" tab
+            tabs.forEach(t => t.classList.remove('active'));
+            document.querySelector('.tab[data-tab="all"]').classList.add('active');
+            
+            tabContents.forEach(content => content.classList.remove('active'));
+            document.getElementById('all').classList.add('active');
+            
+            // Filter tools
+            const allTools = document.querySelectorAll('.tool-card');
+            let hasResults = false;
+            
+            allTools.forEach(tool => {
+                const toolName = tool.querySelector('h4').textContent.toLowerCase();
+                const toolDesc = tool.querySelector('p').textContent.toLowerCase();
+                
+                if (toolName.includes(searchTerm) || toolDesc.includes(searchTerm)) {
+                    tool.style.display = 'block';
+                    hasResults = true;
+                } else {
+                    tool.style.display = 'none';
+                }
+            });
+            
+            // Show message if no results
+            const noResultsMsg = document.getElementById('noResultsMsg');
+            if (!hasResults) {
+                if (!noResultsMsg) {
+                    const msg = document.createElement('div');
+                    msg.id = 'noResultsMsg';
+                    msg.className = 'card';
+                    msg.innerHTML = `
+                        <h3><i class="fas fa-search"></i> No Results Found</h3>
+                        <p>No tools match your search for "${searchTerm}". Try different keywords or browse categories.</p>
+                    `;
+                    document.getElementById('all').prepend(msg);
+                }
+            } else if (noResultsMsg) {
+                noResultsMsg.remove();
+            }
+        }
+
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pre-populate all category tabs
+            const categories = ['domain', 'person', 'social', 'documents', 'images'];
+            categories.forEach(category => {
+                populateCategoryTab(category);
+            });
+        });
+    </script>
+</body>
+</html>
+
